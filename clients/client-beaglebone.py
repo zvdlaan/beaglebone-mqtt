@@ -1,12 +1,13 @@
 #! /usr/bin/python
 
 import paho.mqtt.client as mqtt
-import time
+import time 
 
 import sys
 sys.path.insert(0, '/home/vandy/Code/mqtt-beaglebone/bbb-python-io')
 import BBB_ADC as ADC
-ADC.Initialize()
+from BBB_GPIO import GPIO_PIN_OUTPUT
+
 
 # callback for CONNACK response from server
 def on_connect(client, userdata, rc):
@@ -20,7 +21,12 @@ def on_connect(client, userdata, rc):
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
 #	print( "-- INCOMING MESSAGE --" + "\n\t[topic]: " + msg.topic + "\n\t[message]: " + str(msg.payload) + "\n" )
-	""" blah """
+	global ledPin
+	if msg.topic == "cis654/mqtt/test/beaglebone/led" and str(msg.payload)=="on":
+		ledPin.SetOutputHigh()
+	elif msg.topic == "cis654/mqtt/test/beaglebone/led" and str(msg.payload)=="off":
+		ledPin.SetOutputLow()
+
 
 def publish( topic, message ):
 	print( "-- PUBLISHING --" )
@@ -35,6 +41,11 @@ def publish( topic, message ):
 #	print( "-- MESSAGE SENT --" + "\n\t[id]:" + str(mid) + "\n\t[status]: Published Successfully \n")
 
 
+ledPin = GPIO_PIN_OUTPUT(26)
+ledPin.SetOutputLow()
+ADC.Initialize()
+
+
 
 client = mqtt.Client()
 client.on_connect = on_connect
@@ -46,7 +57,7 @@ client.connect("iot.eclipse.org", 1883, 60)
 client.loop_start()
 
 while True:
-	time.sleep(15)
+	time.sleep(20)
 	millivolts = ADC.GetValueMillivolts( 'P9-40' )
         temp_c = (float(millivolts) - 500) / 10
         temp_f = (temp_c * 9/5) + 32
