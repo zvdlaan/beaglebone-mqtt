@@ -42,4 +42,3 @@ while True:
 	publish( "cis654/mqtt/test/beaglebone/led", "on" )
 	time.sleep(10)
 	publish( "cis654/mqtt/test/beaglebone/led", "off" )
-	
